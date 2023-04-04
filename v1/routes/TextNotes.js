@@ -10,7 +10,7 @@ const {
 
 
 router.post('/create', CreateNotes);
-router.get('/all', GetNotes);
+router.get('/all/:id', GetNotes);
 router.get('/:id', getNote)
     .patch('/:id', upDateNote)
     .delete('/:id', deleteNote);

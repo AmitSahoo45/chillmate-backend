@@ -19,34 +19,6 @@ const CreateNotes = async (req, res) => {
     }
 }
 
-const GetNotes = async (req, res) => {
-    try {
-        const { userGleID } = req.body
-
-        if (!userGleID)
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User ID is missing' })
-
-        const notes = await TextNotes.find({ userGleID })
-            .sort({ createdAt: -1 })
-
-        res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
-    } catch (error) {
-        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
-    }
-}
-
-const getNote = async (req, res) => {
-    try {
-        const { id } = req.params
-
-        const note = await TextNotes.findById(id)
-
-        res.status(StatusCodes.OK).json({ note, message: 'Note fetched successfully' })
-    } catch (error) {
-        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
-    }
-}
-
 const upDateNote = async (req, res) => {
     try {
         const { id } = req.params
@@ -96,6 +68,34 @@ const deleteNote = async (req, res) => {
         await TextNotes.findByIdAndDelete(id)
 
         res.status(StatusCodes.OK).json({ message: 'Note deleted successfully' })
+    } catch (error) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
+    }
+}
+
+const GetNotes = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        if (!id)
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User ID is missing' })
+
+        const notes = await TextNotes.find({ userGleID: id })
+            .sort({ createdAt: -1 })
+
+        res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
+    } catch (error) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
+    }
+}
+
+const getNote = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const note = await TextNotes.findById(id)
+
+        res.status(StatusCodes.OK).json({ note, message: 'Note fetched successfully' })
     } catch (error) {
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
