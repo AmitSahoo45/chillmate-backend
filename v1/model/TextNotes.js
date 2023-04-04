@@ -34,8 +34,12 @@ const TextNotesSchema = new mongoose.Schema({
     userGleID: {
         type: String,
         required: true
+    },
+    UserRef: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
     }
-    // The userGleID is the user id when the user authenticates using Google
 }, { timestamps: true })
 
 const TextNotes = mongoose.model('TextNotes', TextNotesSchema)

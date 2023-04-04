@@ -5,7 +5,8 @@ const {
     GetNotes,
     getNote,
     upDateNote,
-    deleteNote
+    deleteNote,
+    getNotesMetaData
 } = require('../controllers/TextNotes');
 
 
@@ -14,5 +15,6 @@ router.get('/all/:id', GetNotes);
 router.get('/:id', getNote)
     .patch('/:id', upDateNote)
     .delete('/:id', deleteNote);
+router.get('/all/meta/:id', getNotesMetaData);
 
 module.exports = router;

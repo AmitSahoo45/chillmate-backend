@@ -4,14 +4,17 @@ const { StatusCodes } = require('http-status-codes')
 
 const CreateNotes = async (req, res) => {
     try {
-        const { header, desc, tags, content, userGleID } = req.body
+        const { header, desc, tags, content, userGleID, UserRef } = req.body
 
         if (!header || !desc || !tags || !content || !userGleID)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please fill all the fields' })
 
+        if (!mongoose.Types.ObjectId.isValid(UserRef))
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid User ID' })
+
         const newTags = tags.split(',').map(item => item.trim()).filter(item => item !== '')
 
-        const newNote = await TextNotes.create({ header, desc, tags: newTags, content, userGleID })
+        const newNote = await TextNotes.create({ header, desc, tags: newTags, content, userGleID, UserRef })
 
         res.status(StatusCodes.CREATED).json({ note: newNote, message: 'Note created successfully' })
     } catch (error) {
@@ -24,10 +27,6 @@ const upDateNote = async (req, res) => {
         const { id } = req.params
         const { header, desc, tags, content, _id, userGleID } = req.body
 
-        /*
-         _id and userGleID are the user id when the user authenticates using Google.
-         _id is the one when user is created in the database and userGleID is the one when user is authenticated using Google
-        */
         if (!header || !desc || !tags || !content)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Missing fields' })
 
@@ -82,6 +81,7 @@ const GetNotes = async (req, res) => {
 
         const notes = await TextNotes.find({ userGleID: id })
             .sort({ createdAt: -1 })
+            .populate('UserRef', 'name email photoURL')
 
         res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
     } catch (error) {
@@ -94,8 +94,27 @@ const getNote = async (req, res) => {
         const { id } = req.params
 
         const note = await TextNotes.findById(id)
+            .populate('UserRef', 'name email photoURL')
 
         res.status(StatusCodes.OK).json({ note, message: 'Note fetched successfully' })
+    } catch (error) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
+    }
+}
+
+const getNotesMetaData = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        if (!id)
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User ID is missing' })
+
+        const notes = await TextNotes.find({ userGleID: id })
+            .sort({ createdAt: -1 })
+            .select('-__v -content -userGleID -likes -comments')
+            .populate('UserRef', 'name email photoURL')
+
+        res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
     } catch (error) {
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
@@ -106,5 +125,6 @@ module.exports = {
     GetNotes,
     getNote,
     upDateNote,
-    deleteNote
+    deleteNote,
+    getNotesMetaData
 }

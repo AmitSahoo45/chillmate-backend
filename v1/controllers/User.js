@@ -1,4 +1,3 @@
-const mongoose = require('mongoose')
 const User = require('../model/User')
 const { StatusCodes } = require('http-status-codes')
 
