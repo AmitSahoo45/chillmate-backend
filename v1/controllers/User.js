@@ -5,6 +5,8 @@ const RegisterUser = async (req, res) => {
     try {
         const { name, email, photoURL, googleID } = req.body
 
+        console.log(req.body)
+
         if (!name || !email || !photoURL || !googleID)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please fill all the fields' })
 

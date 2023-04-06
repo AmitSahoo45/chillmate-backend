@@ -1,16 +1,27 @@
 const mongoose = require('mongoose')
 const TextNotes = require('../model/TextNotes')
+const User = require('../model/User')
 const { StatusCodes } = require('http-status-codes')
 
 const CreateNotes = async (req, res) => {
     try {
-        const { header, desc, tags, content, userGleID, UserRef } = req.body
+        const {
+            header, desc, tags, content, userGleID,
+            name, email, photoURL, googleID
+        } = req.body
 
         if (!header || !desc || !tags || !content || !userGleID)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please fill all the fields' })
 
-        if (!mongoose.Types.ObjectId.isValid(UserRef))
-            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid User ID' })
+        const ExistingUser = await User.findOne({ googleID: userGleID })
+        let UserRef = null
+
+        if (!ExistingUser) {
+            const { _id } = await User.create({ name, email, photoURL, googleID })
+            UserRef = _id
+        }
+        else
+            UserRef = ExistingUser._id
 
         const newTags = tags.split(',').map(item => item.trim()).filter(item => item !== '')
 
@@ -25,13 +36,10 @@ const CreateNotes = async (req, res) => {
 const upDateNote = async (req, res) => {
     try {
         const { id } = req.params
-        const { header, desc, tags, content, _id, userGleID } = req.body
+        const { header, desc, tags, content, userGleID } = req.body
 
         if (!header || !desc || !tags || !content)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Missing fields' })
-
-        if (!_id || !userGleID)
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Missing credentials' })
 
         let note = await TextNotes.findById(id)
 
@@ -59,10 +67,9 @@ const upDateNote = async (req, res) => {
 const deleteNote = async (req, res) => {
     try {
         const { id } = req.params
-        const { _id, userGleID } = req.body
 
-        if (!_id || !userGleID)
-            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Missing credentials' })
+        if (!mongoose.Types.ObjectId.isValid(id))
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Note not found' })
 
         await TextNotes.findByIdAndDelete(id)
 
@@ -95,6 +102,9 @@ const getNote = async (req, res) => {
 
         const note = await TextNotes.findById(id)
             .populate('UserRef', 'name email photoURL')
+
+        if (!note)
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'No note found' })
 
         res.status(StatusCodes.OK).json({ note, message: 'Note fetched successfully' })
     } catch (error) {
