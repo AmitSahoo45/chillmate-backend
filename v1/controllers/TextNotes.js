@@ -7,17 +7,24 @@ const CreateNotes = async (req, res) => {
     try {
         const {
             header, desc, tags, content, userGleID,
-            name, email, photoURL, googleID
+            name, email, photoURL,
+            Subject
         } = req.body
 
-        if (!header || !desc || !tags || !content || !userGleID)
+        if (!header || !desc || !tags || !content)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please fill all the fields' })
+
+        if (!Subject)
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Subject is empty' })
+
+        if (!userGleID)
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please login to create notes' })
 
         const ExistingUser = await User.findOne({ googleID: userGleID })
         let UserRef = null
 
         if (!ExistingUser) {
-            const { _id } = await User.create({ name, email, photoURL, googleID })
+            const { _id } = await User.create({ name, email, photoURL, googleID: userGleID })
             UserRef = _id
         }
         else
@@ -25,7 +32,15 @@ const CreateNotes = async (req, res) => {
 
         const newTags = tags.split(',').map(item => item.trim()).filter(item => item !== '')
 
-        const newNote = await TextNotes.create({ header, desc, tags: newTags, content, userGleID, UserRef })
+        const newNote = await TextNotes.create({
+            header,
+            desc,
+            tags: newTags,
+            content,
+            userGleID,
+            UserRef,
+            Subject
+        })
 
         res.status(StatusCodes.CREATED).json({ note: newNote, message: 'Note created successfully' })
     } catch (error) {
@@ -80,6 +95,7 @@ const deleteNote = async (req, res) => {
 }
 
 const GetNotes = async (req, res) => {
+    // This fetches all notes created by a user. in the req.params we send the google id of the user 
     try {
         const { id } = req.params
 
@@ -125,6 +141,34 @@ const getNotesMetaData = async (req, res) => {
             .populate('UserRef', 'name email photoURL')
 
         res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
+    } catch (error) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
+    }
+}
+
+const LikeANote = async (req, res) => {
+    try {
+        const { id } = req.params
+        const { name, email, photoURL, userGleID } = req.body
+
+        if (!id)
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Note ID is missing' })
+
+        if (!userGleID)
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User ID is missing' })
+
+        const existingUser = await User.find({ googleID: userGleID })
+
+        if (!existingUser)
+            await User.create({ name, email, photoURL, googleID: userGleID })
+
+        // check if the userGleID already exists in the likes array of the note
+        // if it exists then remove it from the array
+        // else add it to the array
+
+        await TextNotes.findByIdAndUpdate(id, { $addToSet: { likes: userGleID } })
+
+        res.status(StatusCodes.OK).json({ message: 'Liked successfully' })
     } catch (error) {
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const Subject = require('./Subject')
 
 const TextNotesSchema = new mongoose.Schema({
     header: {
@@ -38,6 +39,10 @@ const TextNotesSchema = new mongoose.Schema({
     UserRef: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    Subject: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Subject'
     }
 }, { timestamps: true })
 
