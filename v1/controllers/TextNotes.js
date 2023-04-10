@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const TextNotes = require('../model/TextNotes')
+const SubjectModel = require('../model/Subject')
 const User = require('../model/User')
 const { StatusCodes } = require('http-status-codes')
 
@@ -41,6 +42,14 @@ const CreateNotes = async (req, res) => {
             UserRef,
             Subject
         })
+
+        // the subject is the subject's id. 
+        // Take the subject and push it to the specific subject's notes array 
+        await SubjectModel.findOneAndUpdate(
+            { _id: Subject },
+            { $push: { Chapters: newNote._id } },
+            { new: true }
+        )
 
         res.status(StatusCodes.CREATED).json({ note: newNote, message: 'Note created successfully' })
     } catch (error) {

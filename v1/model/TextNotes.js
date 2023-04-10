@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const Subject = require('./Subject')
 
 const TextNotesSchema = new mongoose.Schema({
     header: {

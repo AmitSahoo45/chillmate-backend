@@ -24,12 +24,7 @@ const SubjectSchema = new mongoose.Schema({
         required: true
     },
     Chapters: {
-        type: [{
-            _id: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'TextNotes'
-            }
-        }],
+        type: [mongoose.Schema.Types.ObjectId],
         ref: 'TextNotes'
     },
     Likes: {
