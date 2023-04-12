@@ -24,7 +24,10 @@ const createSubject = async (req, res) => {
         else
             UserRef = ExistingUser._id
 
-        const newTags = Subtags.split(',').map(item => item.trim()).filter(item => item !== '')
+        const newTags = Subtags
+            .split(',')
+            .map(item => item.trim())
+            .filter((item, index, self) => self.indexOf(item) === index && item !== '');
         await Subject.create({
             Subname, Subdesc,
             Subtags: newTags,

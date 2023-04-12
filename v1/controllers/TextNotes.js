@@ -31,7 +31,7 @@ const CreateNotes = async (req, res) => {
         else
             UserRef = ExistingUser._id
 
-        const newTags = tags.split(',').map(item => item.trim()).filter(item => item !== '')
+        const newTags = [...new Set(tags.split(',').map(item => item.trim()).filter(item => item !== ''))];
 
         const newNote = await TextNotes.create({
             header,
