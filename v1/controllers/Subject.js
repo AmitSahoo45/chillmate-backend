@@ -76,7 +76,7 @@ const getSubject = async (req, res) => {
 
         const notes = await TextNotes
             .find({ Subject: id })
-            .select('header desc tags createdAt')
+            .select('header desc tags createdAt userGleID')
             .populate('UserRef', 'name')
             .sort({ createdAt: -1 })
 
@@ -111,6 +111,7 @@ const updateSubject = async (req, res) => {
 
         res.status(StatusCodes.OK).json({ message: 'Subject updated successfully' })
     } catch (error) {
+        console.log(error)
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
 }
@@ -161,11 +162,30 @@ const LikeANote = async (req, res) => {
     }
 }
 
+const SharingSubject = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        if (!mongoose.Types.ObjectId.isValid(id))
+            return res.status(StatusCodes.NOT_FOUND).json({ message: 'Subject not found' })
+
+        const notes = await TextNotes
+            .find({ Subject: id })
+            .populate('UserRef', 'name photoURL')
+            .sort({ createdAt: -1 })
+
+        res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
+    } catch (error) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
+    }
+}
+
 module.exports = {
     createSubject,
     getSubjects,
     getSubject,
     updateSubject,
     deleteSubject,
-    LikeANote
+    LikeANote,
+    SharingSubject
 }

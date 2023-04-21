@@ -7,7 +7,8 @@ const {
     getSubjects,
     getSubject,
     deleteSubject,
-    LikeANote
+    LikeANote,
+    SharingSubject
 } = require('../controllers/Subject');
 
 router.post('/create', createSubject);
@@ -16,5 +17,6 @@ router.get('/:id', getSubject)
     .patch('/:id', updateSubject)
     .delete('/:id', deleteSubject);
 router.patch('/like/:id', LikeANote);
+router.get('/share/:id', SharingSubject);
 
 module.exports = router;
