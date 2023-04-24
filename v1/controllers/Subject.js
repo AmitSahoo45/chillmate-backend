@@ -177,17 +177,30 @@ const SharingSubject = async (req, res) => {
 
         const notes = await TextNotes
             .find({ Subject: id })
-            .select('header desc tags createdAt userGleID')
+            .select('header desc tags createdAt userGleID createdAt')
             .sort({ createdAt: -1 })
             .limit(limit)
             .skip(INDEX)
 
         const subject = await Subject
             .findById(id)
-            .select('Subname Subdesc Subtags Likes')
+            .select('Subname Subdesc Subtags Likes createdAt')
             .populate('UserRef', 'name photoURL')
 
         res.status(StatusCodes.OK).json({ subject, notes, message: 'Notes fetched successfully' })
+    } catch (error) {
+        res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
+    }
+}
+
+const getNoteContent = async (req, res) => {
+    try {
+        const { id } = req.params
+
+        const content = await TextNotes.findById(id)
+            .select('content')
+
+        res.status(StatusCodes.OK).json({ content, message: 'Content fetched successfully' })
     } catch (error) {
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
@@ -200,5 +213,6 @@ module.exports = {
     updateSubject,
     deleteSubject,
     LikeANote,
-    SharingSubject
+    SharingSubject,
+    getNoteContent
 }
