@@ -78,7 +78,7 @@ const getSubject = async (req, res) => {
             .find({ Subject: id })
             .select('header desc tags createdAt userGleID')
             .populate('UserRef', 'name')
-            .sort({ Subname: 1 })
+            .sort({ header: 1 })
 
         res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
     } catch (error) {
