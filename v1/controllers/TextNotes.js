@@ -112,7 +112,7 @@ const GetNotes = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User ID is missing' })
 
         const notes = await TextNotes.find({ userGleID: id })
-            .sort({ createdAt: -1 })
+            .sort({ header: -1 })
             .populate('UserRef', 'name email photoURL')
 
         res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })

@@ -55,7 +55,7 @@ const getSubjects = async (req, res) => {
         const subjects = await Subject.find({ userGleID: id })
             .populate('Subname Subdesc Subtags Likes')
             .populate('UserRef', 'name')
-            .sort({ createdAt: 1 })
+            .sort({ Subname: 1 })
             .limit(limit)
             .skip(INDEX)
 
