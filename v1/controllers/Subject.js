@@ -178,7 +178,7 @@ const SharingSubject = async (req, res) => {
         const notes = await TextNotes
             .find({ Subject: id })
             .select('header desc tags createdAt userGleID createdAt')
-            .sort({ createdAt: -1 })
+            .sort({ header: 1 })
             .limit(limit)
             .skip(INDEX)
 
