@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
-const { TextNoteRouter, UserRouter, SubjectRouter } = require('./v1/routes')
+const { TextNoteRouter, UserRouter, SubjectRouter, ErrorSheetRouter } = require('./v1/routes')
 
 require('dotenv').config();
 
@@ -37,6 +37,7 @@ app.get('/', (req, res) => {
 app.use('/v1/user', UserRouter)
 app.use('/v1/textnotes', TextNoteRouter)
 app.use('/v1/subject', SubjectRouter)
+app.use('/v1/errorsheet', ErrorSheetRouter)
 
 // Version 1
 

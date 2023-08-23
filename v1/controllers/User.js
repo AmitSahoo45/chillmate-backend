@@ -19,6 +19,7 @@ const RegisterUser = async (req, res) => {
 
         res.status(StatusCodes.CREATED).json({ _id: newUser._id, message: 'Auth successfull' })
     } catch (error) {
+        console.log(error)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Please signout and signin again' })
     }
 }
