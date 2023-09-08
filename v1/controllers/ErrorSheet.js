@@ -6,6 +6,10 @@ const SheetControll = require('../model/SheetControll')
 
 const createErrorSheet = async (req, res) => {
     try {
+        const page = Number(req.query.page) || 1;
+        const limit = 9;
+        const INDEX = (page - 1) * limit;
+        
         const { id, probName, probLink, mistake,
             improvement, isMistakeCorrected, tags,
             revisionPriority, BeforeInterviewLookup } = req.body
@@ -126,15 +130,88 @@ const getErrorSheets = async (req, res) => {
         const page = Number(req.query.page) || 1;
         const limit = 9;
         const INDEX = (page - 1) * limit;
+        
+        let searchText = req.query.searchText
+        let searchBy = req.query.searchBy
 
-        const total = await ErrorSheet.countDocuments({ UserRef: id })
+        let total, errorsheets;
 
-        const errorsheets = await ErrorSheet.find({ UserRef: id })
-            .populate('probName probLink mistake improvement isMistakeCorrected tags')
-            .populate('UserRef', 'name photoURL')
-            .sort({ createdAt: -1 })
-            .limit(limit)
-            .skip(INDEX)
+        switch (searchBy) {
+            case '':
+                total = await ErrorSheet.countDocuments({ UserRef: id , 
+                    $or: [
+                        { probName: { $regex: searchText, $options: 'i' } },
+                        { tags: { $regex: searchText, $options: 'i' } }
+                    ]
+                })
+                errorsheets = await ErrorSheet.find({ UserRef: id , 
+                    $or: [
+                        { probName: { $regex: searchText, $options: 'i' } },
+                        { tags: { $regex: searchText, $options: 'i' } }
+                    ]
+                })
+                    .populate('probName probLink mistake improvement isMistakeCorrected tags')
+                    .populate('UserRef', 'name photoURL')
+                    .sort({ createdAt: -1 })
+                    .limit(limit)
+                    .skip(INDEX)
+                break;
+
+            case 'Yes':
+                total = await ErrorSheet.countDocuments({ UserRef: id, BeforeInterviewLookup: 'Yes' })
+                errorsheets = await ErrorSheet.find({ UserRef: id, BeforeInterviewLookup: 'Yes' })
+                    .populate('probName probLink mistake improvement isMistakeCorrected tags')
+                    .populate('UserRef', 'name photoURL')
+                    .sort({ createdAt: -1 })
+                    .limit(limit)
+                    .skip(INDEX)
+                break;
+
+            case 'No':
+                total = await ErrorSheet.countDocuments({ UserRef: id, BeforeInterviewLookup: 'No' })
+                errorsheets = await ErrorSheet.find({ UserRef: id, BeforeInterviewLookup: 'No' })
+                    .populate('probName probLink mistake improvement isMistakeCorrected tags')
+                    .populate('UserRef', 'name photoURL')
+                    .sort({ createdAt: -1 })
+                    .limit(limit)
+                    .skip(INDEX)
+                break;
+
+            case 'Maybe':
+                total = await ErrorSheet.countDocuments({ UserRef: id, BeforeInterviewLookup: 'Maybe' })
+                errorsheets = await ErrorSheet.find({ UserRef: id, BeforeInterviewLookup: 'Maybe' })
+                    .populate('probName probLink mistake improvement isMistakeCorrected tags')
+                    .populate('UserRef', 'name photoURL')
+                    .sort({ createdAt: -1 })
+                    .limit(limit)
+                    .skip(INDEX)
+                break;
+
+            default:
+                errorsheets = await ErrorSheet.find({ 
+                    UserRef: id,
+                    $or: [
+                        { probName: { $regex: searchText, $options: 'i' } },
+                        { tags: { $regex: searchText, $options: 'i' } }
+                    ]
+                })
+                    .populate('probName probLink mistake improvement isMistakeCorrected tags')
+                    .populate('UserRef', 'name photoURL')
+                    .sort({ createdAt: -1 })
+                    .limit(limit)
+                    .skip(INDEX)
+                total = errorsheets.length
+                break;
+        }
+
+        // const total = await ErrorSheet.countDocuments({ UserRef: id })
+
+        // const errorsheets = await ErrorSheet.find({ UserRef: id })
+        //     .populate('probName probLink mistake improvement isMistakeCorrected tags')
+        //     .populate('UserRef', 'name photoURL')
+        //     .sort({ createdAt: -1 })
+        //     .limit(limit)
+        //     .skip(INDEX)
 
         res.status(StatusCodes.OK).json({
             errorsheets,
