@@ -151,7 +151,6 @@ const getErrorSheets = async (req, res) => {
                     ]
                 })
                     .populate('probName probLink mistake improvement isMistakeCorrected tags')
-                    .populate('UserRef', 'name photoURL')
                     .sort({ createdAt: -1 })
                     .limit(limit)
                     .skip(INDEX)
@@ -196,7 +195,6 @@ const getErrorSheets = async (req, res) => {
                     ]
                 })
                     .populate('probName probLink mistake improvement isMistakeCorrected tags')
-                    .populate('UserRef', 'name photoURL')
                     .sort({ createdAt: -1 })
                     .limit(limit)
                     .skip(INDEX)
@@ -204,17 +202,11 @@ const getErrorSheets = async (req, res) => {
                 break;
         }
 
-        // const total = await ErrorSheet.countDocuments({ UserRef: id })
-
-        // const errorsheets = await ErrorSheet.find({ UserRef: id })
-        //     .populate('probName probLink mistake improvement isMistakeCorrected tags')
-        //     .populate('UserRef', 'name photoURL')
-        //     .sort({ createdAt: -1 })
-        //     .limit(limit)
-        //     .skip(INDEX)
+        const aboutUser = await User.findById(id).select('name photoURL')
 
         res.status(StatusCodes.OK).json({
             errorsheets,
+            user: aboutUser,
             currentPage: page,
             numberOfPages: Math.ceil(total / limit)
         })
