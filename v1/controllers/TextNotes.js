@@ -171,10 +171,6 @@ const LikeANote = async (req, res) => {
         if (!existingUser)
             await User.create({ name, email, photoURL, googleID: userGleID })
 
-        // check if the userGleID already exists in the likes array of the note
-        // if it exists then remove it from the array
-        // else add it to the array
-
         await TextNotes.findByIdAndUpdate(id, { $addToSet: { likes: userGleID } })
 
         res.status(StatusCodes.OK).json({ message: 'Liked successfully' })

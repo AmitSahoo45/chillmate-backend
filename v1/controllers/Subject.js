@@ -47,23 +47,59 @@ const getSubjects = async (req, res) => {
     try {
         const { id } = req.params
         const page = Number(req.query.page) || 1;
-        const limit = 6;
+        const limit = 4;
         const INDEX = (page - 1) * limit;
-        // count total number of documents for the chapter 
-        const total = await Subject.countDocuments({ userGleID: id })
+        const search = req.query.search || ''
 
-        const subjects = await Subject.find({ userGleID: id })
-            .populate('Subname Subdesc Subtags Likes')
-            .populate('UserRef', 'name')
-            .sort({ Subname: 1 })
-            .limit(limit)
-            .skip(INDEX)
+        let subjects, total;
 
-        res.status(StatusCodes.OK).json({
-            subjects,
-            currentPage: page,
-            numberOfPages: Math.ceil(total / limit)
-        })
+        switch (search) {
+            case '':
+                subjects = await Subject.find({ userGleID: id })
+                    .populate('Subname Subdesc Subtags Likes')
+                    .populate('UserRef', 'name')
+                    .sort({ Subname: 1 })
+                    .limit(limit)
+                    .skip(INDEX)
+
+                total = await Subject.countDocuments({ userGleID: id })
+
+                return res.status(StatusCodes.OK).json({
+                    subjects,
+                    currentPage: page,
+                    numberOfPages: Math.ceil(total / limit)
+                })
+
+            default:
+                subjects = await Subject.find({
+                    userGleID: id,
+                    $or: [
+                        { Subname: { $regex: search, $options: 'i' } },
+                        { Subdesc: { $regex: search, $options: 'i' } },
+                        { Subtags: { $regex: search, $options: 'i' } }
+                    ]
+                })
+                    .populate('Subname Subdesc Subtags Likes')
+                    .populate('UserRef', 'name')
+                    .sort({ Subname: 1 })
+                    .limit(limit)
+                    .skip(INDEX)
+
+                total = await Subject.countDocuments({
+                    userGleID: id,
+                    $or: [
+                        { Subname: { $regex: search, $options: 'i' } },
+                        { Subdesc: { $regex: search, $options: 'i' } },
+                        { Subtags: { $regex: search, $options: 'i' } }
+                    ]
+                })
+
+                return res.status(StatusCodes.OK).json({
+                    subjects,
+                    currentPage: page,
+                    numberOfPages: Math.ceil(total / limit)
+                })
+        }
     } catch (error) {
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
@@ -73,14 +109,62 @@ const getSubject = async (req, res) => {
     // here send the _id of the subject and get the Textnotes of that subject
     try {
         const { id } = req.params
+        const page = Number(req.query.page) || 1;
+        const limit = 3;
+        const INDEX = (page - 1) * limit;
+        const search = req.query.search || ''
 
-        const notes = await TextNotes
-            .find({ Subject: id })
-            .select('header desc tags createdAt userGleID')
-            .populate('UserRef', 'name')
-            .sort({ header: 1 })
+        let total, notes
 
-        res.status(StatusCodes.OK).json({ notes, message: 'Notes fetched successfully' })
+        switch (search) {
+            case '':
+                total = await TextNotes.countDocuments({ Subject: id })
+
+                notes = await TextNotes
+                    .find({ Subject: id })
+                    .select('header desc tags createdAt userGleID')
+                    .populate('UserRef', 'name')
+                    .sort({ header: 1 })
+                    .limit(limit)
+                    .skip(INDEX)
+
+                return res.status(StatusCodes.OK).json({
+                    notes,
+                    currentPage: page,
+                    numberOfPages: Math.ceil(total / limit)
+                })
+
+            default:
+                total = await TextNotes.countDocuments({
+                    Subject: id,
+                    $or: [
+                        { header: { $regex: search, $options: 'i' } },
+                        { desc: { $regex: search, $options: 'i' } },
+                        { tags: { $regex: search, $options: 'i' } }
+                    ]
+                })
+
+                notes = await TextNotes
+                    .find({
+                        Subject: id,
+                        $or: [
+                            { header: { $regex: search, $options: 'i' } },
+                            { desc: { $regex: search, $options: 'i' } },
+                            { tags: { $regex: search, $options: 'i' } }
+                        ]
+                    })
+                    .select('header desc tags createdAt userGleID')
+                    .populate('UserRef', 'name')
+                    .sort({ header: 1 })
+                    .limit(limit)
+                    .skip(INDEX)
+
+                return res.status(StatusCodes.OK).json({
+                    notes,
+                    currentPage: page,
+                    numberOfPages: Math.ceil(total / limit)
+                })
+        }
     } catch (error) {
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
@@ -111,7 +195,6 @@ const updateSubject = async (req, res) => {
 
         res.status(StatusCodes.OK).json({ message: 'Subject updated successfully' })
     } catch (error) {
-        console.log(error)
         res.status(StatusCodes.NOT_FOUND).json({ message: error.message })
     }
 }
@@ -172,8 +255,6 @@ const SharingSubject = async (req, res) => {
         const page = Number(req.query.page) || 1;
         const limit = 10;
         const INDEX = (page - 1) * limit;
-        // count total number of documents for the chapter 
-        const total = await TextNotes.countDocuments({ Subject: id })
 
         const notes = await TextNotes
             .find({ Subject: id })

@@ -49,8 +49,6 @@ const updateErrorSheet = async (req, res) => {
         if (!sheetExist)
             return res.status(StatusCodes.NOT_FOUND).json({ message: 'Error Sheet not found' })
 
-        console.log('Hi - ', userid, sheetExist)
-
         if (sheetExist.UserRef._id != userid)
             return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'You are not authorized to perform this action' })
 

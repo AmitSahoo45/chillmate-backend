@@ -5,8 +5,6 @@ const RegisterUser = async (req, res) => {
     try {
         const { name, email, photoURL, googleID } = req.body
 
-        console.log(req.body)
-
         if (!name || !email || !photoURL || !googleID)
             return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Please fill all the fields' })
 
@@ -19,7 +17,6 @@ const RegisterUser = async (req, res) => {
 
         res.status(StatusCodes.CREATED).json({ _id: newUser._id, message: 'Auth successfull' })
     } catch (error) {
-        console.log(error)
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Please signout and signin again' })
     }
 }
